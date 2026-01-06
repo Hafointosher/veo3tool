@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Auto Flow Pro</title>
+  <link rel="stylesheet" href="panel.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header>
+      <div class="branding">
+        <span class="material-icons logo-icon">auto_fix_high</span>
+        <div class="brand-text">
+          <span class="app-name">Auto Flow Pro</span>
+          <span class="app-sub">Automation for VEO AI</span>
+        </div>
+        <span class="version">v8.0.0</span>
+      </div>
+      <div class="header-badges">
+        <span class="badge status-idle" id="appStatusBadge">Sẵn sàng</span>
+        <button class="btn-icon header-btn" id="btnSettings" title="Settings">
+          <span class="material-icons">settings</span>
+        </button>
+        <button class="btn-icon header-btn" id="btnHelp" title="Help">
+          <span class="material-icons">help_outline</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Navigation Tabs -->
+    <div class="main-tabs">
+      <button class="tab-btn active" data-tab="text-mode">
+        <span class="material-icons">text_fields</span>
+        Text
+      </button>
+      <button class="tab-btn" data-tab="image-mode">
+        <span class="material-icons">image</span>
+        Image
+      </button>
+      <button class="tab-btn" data-tab="dashboard-mode">
+        <span class="material-icons">dashboard</span>
+        Dashboard
+      </button>
+      <button class="tab-btn" data-tab="scheduler-mode">
+        <span class="material-icons">schedule</span>
+        Scheduler
+      </button>
+    </div>
+
+    <!-- Global Controls Panel -->
+    <div class="controls-panel" id="controlsPanel">
+      <div class="control-row">
+        <div class="comp-select">
+          <label>Model</label>
+          <select id="settingModel">
+            <option value="Veo 3.1 fast">Veo 3.1 (Fast)</option>
+            <option value="Veo 3.1 Quality">Veo 3.1 (Quality)</option>
+            <option value="Veo 3.1 fast Lower Priority">Veo 3.1 Fast (Lower)</option>
+            <option value="Veo 2">Veo 2</option>
+          </select>
+        </div>
+        <div class="comp-select small">
+          <label>Tỷ lệ</label>
+          <select id="settingRatio">
+            <option value="Ngang">16:9</option>
+            <option value="Dọc">9:16</option>
+            <option value="Vuông">1:1</option>
+          </select>
+        </div>
+        <div class="comp-select small">
+          <label>Số lượng</label>
+          <select id="settingCount">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="control-row secondary">
+        <label class="toggle-row">
+          <input type="checkbox" id="chkAutoDownload" checked>
+          <span>Auto Download</span>
+        </label>
+        <div class="input-group">
+          <span>Batch Size</span>
+          <input type="number" id="settingBatchSize" value="4" min="1" max="10" style="width: 45px;">
+        </div>
+        <div class="input-group">
+          <span>Rest (s)</span>
+          <input type="number" id="settingRestTime" value="60" min="10" max="300" style="width: 50px;">
+        </div>
+        <div class="input-group">
+          <span>Timeout (s)</span>
+          <input type="number" id="settingTimeout" value="300" style="width: 55px;">
+        </div>
+      </div>
+
+      <!-- Queue Strategy -->
+      <div class="control-row tertiary">
+        <div class="comp-select small">
+          <label>Chiến Lược Hàng Đợi</label>
+          <select id="settingQueueStrategy">
+            <option value="fifo">Tuần tự (Vào trước - Ra trước)</option>
+            <option value="priority">Theo Độ ưu tiên</option>
+            <option value="short-first">Prompt ngắn trước</option>
+            <option value="shuffle">Ngẫu nhiên</option>
+          </select>
+        </div>
+        <div class="comp-select small">
+          <label>Phong Cách Prompt</label>
+          <select id="settingPromptStyle">
+            <option value="none">Không tăng cường</option>
+            <option value="cinematic">Điện ảnh</option>
+            <option value="anime">Hoạt hình Anime</option>
+            <option value="realistic">Thực tế</option>
+            <option value="vintage">Cổ điển</option>
+            <option value="documentary">Phim tài liệu</option>
+            <option value="noir">Phim Noir</option>
+            <option value="scifi">Khoa học viễn tưởng</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Scene Consistency Panel -->
+      <div class="consistency-panel">
+        <div class="panel-header" id="consistencyToggle">
+          <span class="material-icons">palette</span>
+          <span>Đồng Nhất Phân Cảnh</span>
+          <span class="material-icons toggle-icon">expand_more</span>
+        </div>
+        <div class="panel-content" id="consistencyContent" style="display:none;">
+          <div class="consistency-row">
+            <label>👤 Nhân vật</label>
+            <input type="text" id="contextCharacter" placeholder="young woman with red hair, wearing blue dress">
+          </div>
+          <div class="consistency-row">
+            <label>🏙️ Bối cảnh</label>
+            <input type="text" id="contextLocation" placeholder="neon-lit cyberpunk tokyo streets at night">
+          </div>
+          <div class="consistency-row">
+            <label>🎨 Phong cách</label>
+            <input type="text" id="contextStyle" placeholder="cinematic, 4K, dramatic lighting">
+          </div>
+          <div class="consistency-row">
+            <label>💫 Tâm trạng</label>
+            <input type="text" id="contextMood" placeholder="mysterious, tense, emotional">
+          </div>
+          <div class="consistency-row">
+            <label>🎬 Camera</label>
+            <select id="contextCamera">
+              <option value="">-- Không chọn --</option>
+              <option value="tracking">Bám theo chủ thể</option>
+              <option value="dolly">Dolly Zoom (Thu phóng)</option>
+              <option value="aerial">Flycam/Drone</option>
+              <option value="handheld">Cầm tay</option>
+              <option value="static">Cố định</option>
+              <option value="crane">Cần cẩu</option>
+              <option value="pov">Góc nhìn chủ thể</option>
+            </select>
+          </div>
+          <div class="consistency-actions">
+            <button id="btnApplyContext" class="btn-accent">
+              <span class="material-icons">check</span> Áp dụng
+            </button>
+            <button id="btnClearContext" class="btn-secondary">
+              <span class="material-icons">clear</span> Xóa
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENT AREA: TEXT MODE -->
+    <div id="text-mode" class="mode-content active">
+      <div class="toolbar">
+        <input type="file" id="promptFile" accept=".txt" hidden>
+        <button id="btnImport" class="tool-btn">
+          <span class="material-icons">upload</span> Nhập Txt
+        </button>
+        <button id="btnAddData" class="tool-btn">
+          <span class="material-icons">add</span> Thêm
+        </button>
+        <button id="btnEnhanceAll" class="tool-btn accent">
+          <span class="material-icons">auto_awesome</span> Enhance
+        </button>
+        <button id="btnRetryFailed" class="tool-btn warning">
+          <span class="material-icons">refresh</span> Retry Failed
+        </button>
+        <button id="btnClear" class="tool-btn danger">
+          <span class="material-icons">delete_sweep</span> Xóa hết
+        </button>
+        <div class="spacer"></div>
+        <span id="lblCount" class="counter">0 Prompts</span>
+      </div>
+
+      <div class="prompt-add-box" id="manualInputBox" style="display:none;">
+        <textarea id="txtManualInput" placeholder="Nhập prompt (mỗi dòng 1 cái)..."></textarea>
+        <div class="add-box-actions">
+          <button id="btnGenerateVariations" class="btn-secondary">
+            <span class="material-icons">shuffle</span> Tạo Variations
+          </button>
+          <button id="btnConfirmAdd" class="btn-confirm">Thêm vào list</button>
+        </div>
+      </div>
+
+      <div class="list-wrapper">
+        <div class="list-header">
+          <span style="width: 20px">#</span>
+          <span style="width: 35px">Scene</span>
+          <span style="flex:1">Nội dung Prompt</span>
+          <span style="width: 50px">Pri</span>
+          <span style="width: 65px">TT</span>
+          <span style="width: 60px">Actions</span>
+        </div>
+        <div id="promptsList" class="scroll-list">
+          <!-- Items rendered here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENT AREA: IMAGE MODE -->
+    <div id="image-mode" class="mode-content">
+      <div class="toolbar">
+        <input type="file" id="imgFiles" multiple accept="image/*" hidden>
+        <input type="file" id="imgPromptFile" accept=".txt" hidden>
+
+        <button id="btnSelectImages" class="tool-btn">
+          <span class="material-icons">add_photo_alternate</span> Chọn Ảnh
+        </button>
+        <button id="btnImpImgPrompts" class="tool-btn">
+          <span class="material-icons">upload</span> Nạp Prompt
+        </button>
+        <button id="btnAddImgPrompts" class="tool-btn">
+          <span class="material-icons">post_add</span> Nhập Prompt
+        </button>
+        <button id="btnClearImages" class="tool-btn danger">
+          <span class="material-icons">delete</span> Xóa
+        </button>
+
+        <div class="spacer"></div>
+        <select id="sortImages" class="tiny-select">
+          <option value="name_asc">A-Z</option>
+          <option value="name_desc">Z-A</option>
+        </select>
+      </div>
+
+      <div class="prompt-add-box" id="imgManualInputBox" style="display:none;">
+        <textarea id="txtImgManualInput" placeholder="Nhập danh sách prompt (mỗi dòng tương ứng 1 ảnh)..."></textarea>
+        <button id="btnConfirmImgPrompts" class="btn-confirm">Áp dụng cho list ảnh</button>
+      </div>
+
+      <div class="list-wrapper">
+        <div class="list-header">
+          <span style="width: 20px">#</span>
+          <span style="width: 50px">Preview</span>
+          <span style="flex:1">Tên file</span>
+          <span style="flex:1">Prompt</span>
+          <span style="width: 50px">TT</span>
+        </div>
+        <div id="imageList" class="scroll-list">
+          <!-- Image Items -->
+        </div>
+      </div>
+      <div class="footer-info" id="imgFooterCount">0 ảnh đã chọn</div>
+    </div>
+
+    <!-- CONTENT AREA: DASHBOARD -->
+    <div id="dashboard-mode" class="mode-content">
+      <div class="dashboard-grid">
+        <div class="stat-card">
+          <span class="stat-value" id="statTotal">0</span>
+          <span class="stat-label">Tổng Tasks</span>
+        </div>
+        <div class="stat-card success">
+          <span class="stat-value" id="statDone">0</span>
+          <span class="stat-label">Hoàn thành</span>
+        </div>
+        <div class="stat-card warning">
+          <span class="stat-value" id="statRunning">0</span>
+          <span class="stat-label">Đang chạy</span>
+        </div>
+        <div class="stat-card danger">
+          <span class="stat-value" id="statFailed">0</span>
+          <span class="stat-label">Lỗi</span>
+        </div>
+      </div>
+
+      <div class="eta-display">
+        <span class="material-icons">schedule</span>
+        <span id="etaText">ETA: Chưa xác định</span>
+      </div>
+
+      <div class="rate-limit-display">
+        <span class="material-icons">speed</span>
+        <span id="rateLimitText">Rate: -- / min</span>
+      </div>
+
+      <!-- Progress Timeline -->
+      <div class="section-title">
+        <span class="material-icons">timeline</span>
+        Timeline
+      </div>
+      <div class="timeline-wrapper" id="timelineWrapper">
+        <div id="progressTimeline" class="progress-timeline">
+          <!-- Timeline items rendered here -->
+        </div>
+      </div>
+
+      <!-- Video Gallery -->
+      <div class="section-title">
+        <span class="material-icons">video_library</span>
+        Video Gallery
+        <button id="btnDownloadAll" class="btn-mini-action">
+          <span class="material-icons">download</span> Download All
+        </button>
+      </div>
+      <div class="video-gallery" id="videoGallery">
+        <!-- Videos rendered here -->
+      </div>
+
+      <!-- Logs Section -->
+      <div class="section-title">
+        <span class="material-icons">article</span>
+        Logs
+        <button id="btnExportLogs" class="btn-mini-action">
+          <span class="material-icons">download</span> Export
+        </button>
+        <button id="btnClearLogs" class="btn-mini-action danger">
+          <span class="material-icons">delete</span> Clear
+        </button>
+      </div>
+      <div class="logs-container" id="logsContainer">
+        <!-- Logs rendered here -->
+      </div>
+    </div>
+
+    <!-- CONTENT AREA: SCHEDULER -->
+    <div id="scheduler-mode" class="mode-content">
+      <div class="scheduler-form">
+        <div class="form-group">
+          <label>
+            <span class="material-icons">event</span>
+            Thời gian bắt đầu
+          </label>
+          <input type="datetime-local" id="scheduleTime">
+        </div>
+
+        <div class="form-group">
+          <label>
+            <span class="material-icons">repeat</span>
+            Lặp lại
+          </label>
+          <select id="scheduleRepeat">
+            <option value="">Không lặp (Một lần)</option>
+            <option value="hourly">Mỗi giờ</option>
+            <option value="daily">Hàng ngày</option>
+            <option value="weekly">Hàng tuần</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <span class="material-icons">playlist_play</span>
+            Tasks để chạy
+          </label>
+          <select id="scheduleTaskSource">
+            <option value="current">Queue hiện tại</option>
+            <option value="saved">Từ Profile đã lưu</option>
+          </select>
+        </div>
+
+        <button id="btnScheduleJob" class="btn-schedule">
+          <span class="material-icons">schedule_send</span>
+          Lên lịch chạy
+        </button>
+      </div>
+
+      <div class="section-title">
+        <span class="material-icons">pending_actions</span>
+        Scheduled Jobs
+      </div>
+      <div class="scheduled-jobs-list" id="scheduledJobsList">
+        <!-- Scheduled jobs rendered here -->
+      </div>
+
+      <div class="section-title" style="margin-top: 20px;">
+        <span class="material-icons">folder</span>
+        Profile Management
+      </div>
+      <div class="profile-actions">
+        <button id="btnExportProfile" class="tool-btn">
+          <span class="material-icons">download</span> Export Profile
+        </button>
+        <button id="btnImportProfile" class="tool-btn">
+          <span class="material-icons">upload</span> Import Profile
+        </button>
+        <input type="file" id="profileFileInput" accept=".json" hidden>
+      </div>
+
+      <!-- Webhook Settings -->
+      <div class="section-title" style="margin-top: 20px;">
+        <span class="material-icons">webhook</span>
+        Webhook Notifications
+      </div>
+      <div class="webhook-form">
+        <input type="url" id="webhookUrl" placeholder="https://discord.com/api/webhooks/..." class="webhook-input">
+        <div class="webhook-events">
+          <label><input type="checkbox" id="webhookTaskComplete" checked> Task Complete</label>
+          <label><input type="checkbox" id="webhookQueueComplete" checked> Queue Complete</label>
+          <label><input type="checkbox" id="webhookError"> On Error</label>
+        </div>
+        <button id="btnSaveWebhook" class="btn-secondary">
+          <span class="material-icons">save</span> Lưu Webhook
+        </button>
+      </div>
+    </div>
+
+    <!-- Footer Actions -->
+    <div class="footer-actions">
+      <button id="btnStart" class="btn-big-run">
+        <span class="material-icons">play_circle</span>
+        BẮT ĐẦU CHẠY
+      </button>
+      <button id="btnPause" class="btn-pause" disabled>
+        <span class="material-icons">pause_circle</span>
+      </button>
+      <button id="btnStop" class="btn-big-stop" disabled>
+        <span class="material-icons">stop_circle</span>
+        DỪNG
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><span class="material-icons">settings</span> Cài đặt nâng cao</h3>
+        <button class="btn-close" id="btnCloseSettings">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="settings-group">
+          <h4>Rate Limiting</h4>
+          <div class="form-row">
+            <label>Max requests/minute:</label>
+            <input type="number" id="settingRatePerMinute" value="12" min="1" max="30">
+          </div>
+          <div class="form-row">
+            <label>Max requests/hour:</label>
+            <input type="number" id="settingRatePerHour" value="120" min="10" max="500">
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <h4>Retry Settings</h4>
+          <div class="form-row">
+            <label>Max retries:</label>
+            <input type="number" id="settingMaxRetries" value="3" min="1" max="10">
+          </div>
+          <div class="form-row">
+            <label>Retry delay (ms):</label>
+            <input type="number" id="settingRetryDelay" value="2000" min="500" max="10000">
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <h4>Notifications</h4>
+          <label class="toggle-row">
+            <input type="checkbox" id="settingNotifyComplete" checked>
+            <span>Thông báo khi hoàn thành</span>
+          </label>
+          <label class="toggle-row">
+            <input type="checkbox" id="settingNotifyError" checked>
+            <span>Thông báo khi có lỗi</span>
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnSaveSettings" class="btn-confirm">Lưu cài đặt</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Help Modal -->
+  <div id="helpModal" class="modal hidden">
+    <div class="modal-content large">
+      <div class="modal-header">
+        <h3><span class="material-icons">help_outline</span> Hướng dẫn sử dụng</h3>
+        <button class="btn-close" id="btnCloseHelp">&times;</button>
+      </div>
+      <div class="modal-body help-content">
+        <h4>🚀 Bắt đầu nhanh</h4>
+        <ol>
+          <li>Mở trang <strong>labs.google</strong> (VEO AI)</li>
+          <li>Import file .txt chứa prompts hoặc thêm thủ công</li>
+          <li>Chọn Model, Tỷ lệ, và các cài đặt khác</li>
+          <li>Nhấn <strong>BẮT ĐẦU CHẠY</strong></li>
+        </ol>
+
+        <h4>📝 Text-to-Video Mode</h4>
+        <ul>
+          <li><strong>Nhập Txt:</strong> Import file .txt (mỗi dòng = 1 prompt)</li>
+          <li><strong>Thêm:</strong> Nhập thủ công nhiều prompts</li>
+          <li><strong>Enhance:</strong> Tự động thêm style cho prompts</li>
+          <li><strong>Drag & Drop:</strong> Kéo thả để sắp xếp lại thứ tự</li>
+        </ul>
+
+        <h4>🖼️ Image-to-Video Mode</h4>
+        <ul>
+          <li>Chọn nhiều ảnh cùng lúc</li>
+          <li>Nạp file prompt .txt để gán cho từng ảnh</li>
+          <li>Sắp xếp theo tên A-Z hoặc Z-A</li>
+        </ul>
+
+        <h4>📊 Dashboard</h4>
+        <ul>
+          <li>Theo dõi tiến trình real-time</li>
+          <li>Xem ETA dự kiến</li>
+          <li>Video Gallery: Xem và tải video đã hoàn thành</li>
+          <li>Logs: Xem chi tiết hoạt động</li>
+        </ul>
+
+        <h4>⏰ Scheduler</h4>
+        <ul>
+          <li>Lên lịch chạy queue tự động</li>
+          <li>Hỗ trợ lặp lại: Mỗi giờ, Hàng ngày, Hàng tuần</li>
+          <li>Export/Import Profile để backup</li>
+        </ul>
+
+        <h4>🔔 Webhook</h4>
+        <p>Nhận thông báo qua Discord, Slack, hoặc bất kỳ webhook URL nào.</p>
+
+        <h4>⚙️ Hotkeys</h4>
+        <ul>
+          <li><kbd>Ctrl</kbd> + <kbd>Enter</kbd>: Bắt đầu chạy</li>
+          <li><kbd>Escape</kbd>: Dừng queue</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Prompt Modal -->
+  <div id="editModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><span class="material-icons">edit</span> Chỉnh sửa Prompt</h3>
+        <button class="btn-close" id="btnCloseEdit">&times;</button>
+      </div>
+      <div class="modal-body">
+        <textarea id="editPromptText" class="edit-textarea"></textarea>
+        <div class="edit-options">
+          <label>Priority:</label>
+          <select id="editPromptPriority">
+            <option value="1">Low</option>
+            <option value="2" selected>Normal</option>
+            <option value="3">High</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btnCancelEdit" class="btn-secondary">Hủy</button>
+        <button id="btnSaveEdit" class="btn-confirm">Lưu</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="panel.js"></script>
+</body>
+
+</html>

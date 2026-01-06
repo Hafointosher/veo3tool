@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "Auto Flow Pro - Automation for Veo",
+  "version": "8.0.0",
+  "description": "Tự động hóa quy trình tạo video hàng loạt trên Google Flow AI với tính năng nâng cao.",
+  "permissions": [
+    "sidePanel",
+    "scripting",
+    "activeTab",
+    "storage",
+    "tabs",
+    "downloads",
+    "alarms",
+    "notifications"
+  ],
+  "host_permissions": [
+    "https://labs.google/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "Auto Flow Pro"
+  },
+  "side_panel": {
+    "default_path": "panel.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://labs.google/*"
+      ],
+      "js": [
+        "content.js"
+      ]
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
