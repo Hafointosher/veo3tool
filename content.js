@@ -53,162 +53,478 @@ const Logger = {
 };
 
 // ============================================================
-// SELECTOR ENGINE - DYNAMIC & LEARNING
+// SELECTOR ENGINE - DYNAMIC & LEARNING v2.0
 // ============================================================
 const SelectorEngine = {
     cache: new Map(),
+    cacheExpiry: new Map(),
+    CACHE_TTL: 60000, // 1 minute cache
 
+    // Enhanced patterns with more Google Material Design selectors
     patterns: {
         generateButton: [
+            // Primary send/generate buttons
+            "//button[contains(@aria-label, 'Send')]",
+            "//button[contains(@aria-label, 'Generate')]",
+            "//button[contains(@aria-label, 'Gửi')]",
+            "//button[contains(@aria-label, 'Tạo')]",
+            // Material icons
+            "//button[.//span[contains(@class, 'material-icons') and (contains(text(), 'send') or contains(text(), 'arrow_forward'))]]",
+            "//button[.//mat-icon[contains(text(), 'send') or contains(text(), 'arrow_forward')]]",
+            "//button[.//i[contains(@class, 'material-icons')][contains(text(), 'send')]]",
+            // Text content
             "//button[.//span[contains(text(), 'Generate')]]",
             "//button[.//span[contains(text(), 'Tạo')]]",
-            "//button[contains(@aria-label, 'Send prompt')]",
-            "//button[contains(@aria-label, 'Gửi')]",
-            "//button[.//i[contains(text(), 'arrow_forward')]]",
-            "//button[.//span[contains(text(), 'arrow_forward')]]",
-            "//button[.//i[contains(text(), 'send')]]",
-            "//button[.//span[contains(text(), 'send')]]",
+            "//button[contains(., 'Generate')]",
+            // FAB buttons (floating action button)
             "//button[contains(@class, 'mat-mdc-fab')]",
-            "button.generate-button"
+            "//button[contains(@class, 'mat-fab')]",
+            "//button[contains(@class, 'mdc-fab')]",
+            // CSS selectors
+            "button[aria-label*='Send']",
+            "button[aria-label*='Generate']",
+            "button.send-button",
+            "button.generate-button",
+            "[data-testid='send-button']",
+            "[data-testid='generate-button']"
         ],
         promptInput: [
+            // Standard inputs
+            "textarea[placeholder]",
             "textarea",
+            "div[contenteditable='true'][role='textbox']",
             "div[contenteditable='true']",
+            // Data attributes
             "[data-testid='prompt-input']",
-            ".prompt-textarea"
+            "[data-testid='text-input']",
+            // Class patterns
+            "[class*='prompt-input']",
+            "[class*='text-input']",
+            "[class*='textarea']",
+            // Material Design
+            ".mat-mdc-input-element",
+            ".mdc-text-field__input"
         ],
         tuneButton: [
+            // Aria labels
             "//button[contains(@aria-label, 'Settings')]",
-            "//button[.//span[contains(text(), 'Tune')]]",
+            "//button[contains(@aria-label, 'Tune')]",
+            "//button[contains(@aria-label, 'Options')]",
+            "//button[contains(@aria-label, 'Cài đặt')]",
+            // Material icons
+            "//button[.//span[contains(@class, 'material-icons')][contains(text(), 'tune')]]",
+            "//button[.//mat-icon[contains(text(), 'tune')]]",
+            "//button[.//span[contains(text(), 'tune')]]",
             "//button[.//i[contains(text(), 'tune')]]",
-            "//button[.//span[contains(text(), 'tune')]]"
+            "//button[.//span[contains(text(), 'settings')]]",
+            // CSS
+            "button[aria-label*='Settings']",
+            "button[aria-label*='Tune']",
+            "[data-testid='settings-button']"
         ],
         textTab: [
-            "//button[.//span[contains(text(), 'Text')]]",
-            "//div[contains(text(), 'Text to Video')]",
-            "//span[contains(text(), 'Từ văn bản sang video')]",
-            "//div[contains(text(), 'Từ văn bản sang video')]",
-            "//button[contains(., 'Text')]",
+            // Tab roles
             "//div[@role='tab'][contains(., 'Text')]",
+            "//button[@role='tab'][contains(., 'Text')]",
+            "//a[@role='tab'][contains(., 'Text')]",
+            // Vietnamese
+            "//div[@role='tab'][contains(., 'Văn bản')]",
+            "//*[contains(text(), 'Text to video')]",
+            "//*[contains(text(), 'Từ văn bản sang video')]",
+            "//*[contains(text(), 'Text to Video')]",
+            // General text match
+            "//button[.//span[contains(text(), 'Text')]]",
             "//div[contains(@class, 'tab')][contains(., 'Text')]",
-            "//span[contains(text(), 'Text to video')]",
+            // CSS
+            "[role='tab'][data-value='text']",
             "[data-tab='text']",
+            ".tab-text",
             ".text-tab"
         ],
         imageTab: [
+            // Tab roles
+            "//div[@role='tab'][contains(., 'Image')]",
+            "//button[@role='tab'][contains(., 'Image')]",
+            // Vietnamese
+            "//div[@role='tab'][contains(., 'Hình ảnh')]",
+            "//*[contains(text(), 'Image to video')]",
+            "//*[contains(text(), 'Image to Video')]",
+            "//*[contains(text(), 'Tạo video từ')]",
+            "//*[contains(text(), 'Từ hình ảnh')]",
+            // General
             "//button[.//span[contains(text(), 'Image')]]",
-            "//div[contains(text(), 'Image to Video')]",
-            "//span[contains(text(), 'Tạo video từ các khung hình')]",
-            "//div[contains(text(), 'Tạo video từ các khung hình')]"
+            // CSS
+            "[role='tab'][data-value='image']",
+            "[data-tab='image']",
+            ".tab-image",
+            ".image-tab"
         ],
         uploadButton: [
+            // Vietnamese
+            "//button[contains(., 'Tải lên')]",
             "//span[contains(text(), 'Tải lên')]",
             "//div[contains(text(), 'Tải lên')]",
             "//li[contains(., 'Tải lên')]",
-            "//button[contains(., 'Tải lên')]",
+            "//*[@role='menuitem'][contains(., 'Tải lên')]",
+            // English
+            "//button[contains(., 'Upload')]",
             "//span[contains(text(), 'Upload')]",
-            "//button[contains(., 'Upload')]"
+            "//*[@role='menuitem'][contains(., 'Upload')]",
+            // Material icons
+            "//button[.//span[contains(@class, 'material-icons')][contains(text(), 'upload')]]",
+            "//button[.//mat-icon[contains(text(), 'upload')]]",
+            // CSS
+            "button[aria-label*='Upload']",
+            "[data-testid='upload-button']",
+            "input[type='file']"
         ],
         addButton: [
-            "//button[.//span[contains(@class, 'material-icons') and contains(text(), 'add')]]",
-            "//div[@role='button'][.//span[contains(text(), '+')]]",
+            // Material icons for add
+            "//button[.//span[contains(@class, 'material-icons')][contains(text(), 'add')]]",
+            "//button[.//mat-icon[contains(text(), 'add')]]",
+            "//button[.//span[text()='+']]",
+            "//div[@role='button'][contains(., '+')]",
+            // Aria labels
             "//button[contains(@aria-label, 'Add')]",
+            "//button[contains(@aria-label, 'Thêm')]",
+            // Placeholder patterns
+            "//div[contains(@class, 'placeholder')][.//span[contains(text(), '+')]]",
+            "//div[contains(@class, 'add-')]",
+            // CSS
+            "button[aria-label*='Add']",
             ".add-button",
-            "//div[contains(@class, 'placeholder')][.//span[contains(text(), '+')]]"
+            "[data-testid='add-button']"
         ],
         cropSaveButton: [
-            "//span[contains(text(), 'Cắt và lưu')]",
+            // Vietnamese
             "//button[contains(., 'Cắt và lưu')]",
+            "//span[contains(text(), 'Cắt và lưu')]",
+            "//button[contains(., 'Lưu')]",
+            // English
+            "//button[contains(., 'Crop and save')]",
+            "//button[contains(., 'Save')]",
             "//span[contains(text(), 'Crop and save')]",
-            "//button[contains(., 'Crop and save')]"
+            "//button[contains(., 'Apply')]",
+            // CSS
+            "button[aria-label*='Crop']",
+            "button[aria-label*='Save']",
+            ".crop-save-button",
+            "[data-testid='crop-save']"
         ],
         downloadButton: [
+            // Aria labels
             "//button[contains(@aria-label, 'Download')]",
             "//button[contains(@aria-label, 'Tải xuống')]",
+            "//button[contains(@aria-label, 'Tải về')]",
+            // Material icons
+            "//button[.//span[contains(@class, 'material-icons')][contains(text(), 'download')]]",
+            "//button[.//mat-icon[contains(text(), 'download')]]",
             "//button[.//i[contains(text(), 'download')]]",
-            "//button[.//span[contains(text(), 'download')]]"
+            "//button[.//span[contains(text(), 'download')]]",
+            // Text content
+            "//button[contains(., 'Download')]",
+            "//button[contains(., 'Tải xuống')]",
+            // CSS
+            "button[aria-label*='Download']",
+            "[data-testid='download-button']",
+            ".download-button"
         ],
         retryButton: [
+            // Vietnamese
             "//button[@title='Sử dụng lại câu lệnh']",
             "//button[@aria-label='Sử dụng lại câu lệnh']",
+            "//button[contains(@aria-label, 'Thử lại')]",
+            // English
             "//button[@title='Use prompt again']",
             "//button[@aria-label='Use prompt again']",
-            "//button[.//span[contains(text(), 'reuse')]]"
+            "//button[contains(@aria-label, 'Retry')]",
+            "//button[contains(@aria-label, 'Reuse')]",
+            // Material icons
+            "//button[.//span[contains(@class, 'material-icons')][contains(text(), 'refresh')]]",
+            "//button[.//span[contains(@class, 'material-icons')][contains(text(), 'replay')]]",
+            "//button[.//mat-icon[contains(text(), 'refresh')]]",
+            // CSS
+            "button[aria-label*='Retry']",
+            "button[aria-label*='Reuse']",
+            "[data-testid='retry-button']"
+        ],
+        // NEW: Model selector
+        modelSelector: [
+            "//div[contains(@class, 'select')][contains(., 'Veo')]",
+            "//mat-select[contains(., 'Veo')]",
+            "//button[contains(., 'Veo')]",
+            "//*[contains(@aria-label, 'Model')]",
+            "[data-testid='model-selector']"
+        ],
+        // NEW: Aspect ratio selector
+        aspectRatioSelector: [
+            "//div[contains(@class, 'select')][contains(., '16:9') or contains(., '9:16') or contains(., '1:1')]",
+            "//*[contains(@aria-label, 'Aspect')]",
+            "//*[contains(@aria-label, 'Tỷ lệ')]",
+            "[data-testid='aspect-ratio']"
+        ],
+        // NEW: Video result container
+        videoContainer: [
+            "//div[.//video]",
+            "[class*='video-result']",
+            "[class*='generation-result']",
+            "[class*='video-card']"
+        ],
+        // NEW: Progress indicator
+        progressIndicator: [
+            "//*[contains(text(), '%')]",
+            "[class*='progress']",
+            "[role='progressbar']",
+            ".loading-indicator"
         ]
     },
 
+    // Smart element finder with caching and fallback
     async find(elementType, options = {}) {
-        const { timeout = 5000, retries = 3 } = options;
+        const { timeout = 5000, retries = 3, useSmartFallback = true } = options;
 
-        // Check cache first
-        if (this.cache.has(elementType)) {
-            const cachedSelector = this.cache.get(elementType);
-            const el = this.querySelector(cachedSelector);
-            if (el) {
-                Logger.info(`Found ${elementType} from cache`);
-                return el;
+        try {
+            // Check cache with TTL
+            if (this.cache.has(elementType)) {
+                const expiry = this.cacheExpiry.get(elementType);
+                if (expiry && Date.now() < expiry) {
+                    const cachedSelector = this.cache.get(elementType);
+                    const el = this.querySelector(cachedSelector);
+                    if (el && this.isVisible(el)) {
+                        Logger.info(`Found ${elementType} from cache`);
+                        return el;
+                    }
+                }
+                // Cache expired or invalid
+                this.cache.delete(elementType);
+                this.cacheExpiry.delete(elementType);
             }
-            // Cache invalid, remove
-            this.cache.delete(elementType);
-        }
 
-        // Try all patterns with retry
-        const patterns = this.patterns[elementType] || [];
+            // Try all patterns with retry
+            const patterns = this.patterns[elementType] || [];
 
-        for (let attempt = 0; attempt < retries; attempt++) {
-            for (const pattern of patterns) {
-                const el = this.querySelector(pattern);
-                if (el) {
-                    this.cache.set(elementType, pattern);
-                    Logger.success(`Found ${elementType} using: ${pattern}`, { attempt });
-                    return el;
+            for (let attempt = 0; attempt < retries; attempt++) {
+                // Try defined patterns
+                for (const pattern of patterns) {
+                    const el = this.querySelector(pattern);
+                    if (el && this.isVisible(el)) {
+                        this.cacheSelector(elementType, pattern);
+                        Logger.success(`Found ${elementType} using: ${pattern}`, { attempt });
+                        return el;
+                    }
+                }
+
+                // Smart fallback: try to find by semantic meaning
+                if (useSmartFallback && attempt === retries - 1) {
+                    const smartEl = this.smartFallback(elementType);
+                    if (smartEl) {
+                        Logger.success(`Found ${elementType} using smart fallback`);
+                        return smartEl;
+                    }
+                }
+
+                if (attempt < retries - 1) {
+                    await sleep(timeout / retries);
                 }
             }
 
-            if (attempt < retries - 1) {
-                await sleep(timeout / retries);
-            }
+            Logger.warn(`Element not found: ${elementType}`);
+            return null;
+        } catch (e) {
+            Logger.error(`SelectorEngine.find error for ${elementType}`, e);
+            return null;
         }
+    },
 
-        Logger.warn(`Element not found: ${elementType}`);
-        return null;
+    // Cache with TTL
+    cacheSelector(elementType, pattern) {
+        this.cache.set(elementType, pattern);
+        this.cacheExpiry.set(elementType, Date.now() + this.CACHE_TTL);
+    },
+
+    // Check if element is visible
+    isVisible(el) {
+        if (!el) return false;
+        const rect = el.getBoundingClientRect();
+        const style = window.getComputedStyle(el);
+        return (
+            rect.width > 0 &&
+            rect.height > 0 &&
+            style.visibility !== 'hidden' &&
+            style.display !== 'none' &&
+            style.opacity !== '0'
+        );
+    },
+
+    // Smart fallback based on semantic meaning
+    smartFallback(elementType) {
+        const strategies = {
+            generateButton: () => {
+                // Find the main action button near the input
+                const textarea = document.querySelector('textarea');
+                if (textarea) {
+                    const parent = textarea.closest('form') || textarea.parentElement?.parentElement?.parentElement;
+                    if (parent) {
+                        const buttons = parent.querySelectorAll('button');
+                        for (const btn of buttons) {
+                            if (btn.querySelector('.material-icons, mat-icon, [class*="icon"]')) {
+                                return btn;
+                            }
+                        }
+                    }
+                }
+                // Find FAB button
+                return document.querySelector('[class*="fab"]') || 
+                       document.querySelector('button[class*="send"]');
+            },
+            promptInput: () => {
+                // Any visible textarea or contenteditable
+                const textareas = document.querySelectorAll('textarea');
+                for (const ta of textareas) {
+                    if (this.isVisible(ta)) return ta;
+                }
+                const editables = document.querySelectorAll('[contenteditable="true"]');
+                for (const ed of editables) {
+                    if (this.isVisible(ed)) return ed;
+                }
+                return null;
+            },
+            textTab: () => {
+                const tabs = document.querySelectorAll('[role="tab"]');
+                for (const tab of tabs) {
+                    const text = tab.textContent?.toLowerCase() || '';
+                    if (text.includes('text') || text.includes('văn bản')) {
+                        return tab;
+                    }
+                }
+                return null;
+            },
+            imageTab: () => {
+                const tabs = document.querySelectorAll('[role="tab"]');
+                for (const tab of tabs) {
+                    const text = tab.textContent?.toLowerCase() || '';
+                    if (text.includes('image') || text.includes('hình ảnh') || text.includes('ảnh')) {
+                        return tab;
+                    }
+                }
+                return null;
+            },
+            downloadButton: () => {
+                const buttons = document.querySelectorAll('button');
+                for (const btn of buttons) {
+                    const iconText = btn.textContent?.toLowerCase() || '';
+                    const ariaLabel = (btn.getAttribute('aria-label') || '').toLowerCase();
+                    if (iconText.includes('download') || ariaLabel.includes('download') ||
+                        iconText.includes('tải') || ariaLabel.includes('tải')) {
+                        return btn;
+                    }
+                }
+                return null;
+            }
+        };
+
+        const strategy = strategies[elementType];
+        return strategy ? strategy() : null;
     },
 
     querySelector(pattern) {
-        if (pattern.startsWith('//')) {
-            return getElementByXpath(pattern);
+        try {
+            if (pattern.startsWith('//') || pattern.startsWith('/')) {
+                return getElementByXpath(pattern);
+            }
+            return document.querySelector(pattern);
+        } catch (e) {
+            Logger.warn(`Invalid selector: ${pattern}`, e);
+            return null;
         }
-        return document.querySelector(pattern);
     },
 
-    // Learn new selector from user
+    // Find all matching elements
+    querySelectorAll(pattern) {
+        try {
+            if (pattern.startsWith('//') || pattern.startsWith('/')) {
+                return getAllElementsByXpath(pattern);
+            }
+            return Array.from(document.querySelectorAll(pattern));
+        } catch (e) {
+            return [];
+        }
+    },
+
+    // Learn new selector from user (with validation)
     learn(elementType, selector) {
+        if (!selector || typeof selector !== 'string') {
+            Logger.warn('Invalid selector provided for learning');
+            return false;
+        }
+
+        // Validate selector works
+        const el = this.querySelector(selector);
+        if (!el) {
+            Logger.warn(`Selector doesn't match any element: ${selector}`);
+            return false;
+        }
+
         if (!this.patterns[elementType]) {
             this.patterns[elementType] = [];
         }
-        // Add to beginning for priority
-        this.patterns[elementType].unshift(selector);
-        Logger.info(`Learned new selector for ${elementType}: ${selector}`);
 
-        // Save to storage
-        chrome.storage.local.get('selectorPatterns', (data) => {
-            const patterns = data.selectorPatterns || {};
-            patterns[elementType] = this.patterns[elementType];
-            chrome.storage.local.set({ selectorPatterns: patterns });
-        });
+        // Avoid duplicates
+        if (!this.patterns[elementType].includes(selector)) {
+            // Add to beginning for priority
+            this.patterns[elementType].unshift(selector);
+            Logger.info(`Learned new selector for ${elementType}: ${selector}`);
+
+            // Save to storage
+            this.savePatterns();
+        }
+        return true;
+    },
+
+    // Save patterns to storage
+    async savePatterns() {
+        try {
+            await chrome.storage.local.set({ selectorPatterns: this.patterns });
+            Logger.info('Saved selector patterns to storage');
+        } catch (e) {
+            Logger.error('Failed to save patterns', e);
+        }
     },
 
     // Load learned patterns from storage
     async loadPatterns() {
-        const data = await chrome.storage.local.get('selectorPatterns');
-        if (data.selectorPatterns) {
-            for (const [type, patterns] of Object.entries(data.selectorPatterns)) {
-                if (Array.isArray(patterns)) {
-                    this.patterns[type] = [...patterns, ...(this.patterns[type] || [])];
+        try {
+            const data = await chrome.storage.local.get('selectorPatterns');
+            if (data.selectorPatterns) {
+                for (const [type, patterns] of Object.entries(data.selectorPatterns)) {
+                    if (Array.isArray(patterns)) {
+                        // Merge stored patterns (priority) with defaults
+                        const defaults = this.patterns[type] || [];
+                        const merged = [...new Set([...patterns, ...defaults])];
+                        this.patterns[type] = merged;
+                    }
                 }
+                Logger.info('Loaded selector patterns from storage');
             }
-            Logger.info('Loaded selector patterns from storage');
+        } catch (e) {
+            Logger.error('Failed to load patterns', e);
         }
+    },
+
+    // Clear cache
+    clearCache() {
+        this.cache.clear();
+        this.cacheExpiry.clear();
+        Logger.info('Selector cache cleared');
+    },
+
+    // Get stats for debugging
+    getStats() {
+        return {
+            cacheSize: this.cache.size,
+            patternTypes: Object.keys(this.patterns).length,
+            totalPatterns: Object.values(this.patterns).reduce((acc, arr) => acc + arr.length, 0)
+        };
     }
 };
 
